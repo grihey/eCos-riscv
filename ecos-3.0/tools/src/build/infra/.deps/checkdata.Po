@@ -1,0 +1,18 @@
+checkdata.o: ../../infra/checkdata.cxx /usr/include/stdc-predef.h \
+ cyg/infra/cyg_ass.h pkgconf/infra.h pkgconf/hostinfra.h \
+ cyg/infra/cyg_type.h /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
+ cyg/hal/basetype.h
+
+/usr/include/stdc-predef.h:
+
+cyg/infra/cyg_ass.h:
+
+pkgconf/infra.h:
+
+pkgconf/hostinfra.h:
+
+cyg/infra/cyg_type.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h:
+
+cyg/hal/basetype.h:
