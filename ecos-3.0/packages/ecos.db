@@ -6690,3 +6690,10 @@ target stm3210e_eval {
         to run eCos on the STM3210E EVAL board."
 }
 
+target riscv_scr5_fpga_fire {
+        alias { "RISCV SCR5 on FPGA with some peripherals" riscvscr5f }
+        packages {
+        }
+        description "The riscv debugging fpga with scr5."
+}
+
