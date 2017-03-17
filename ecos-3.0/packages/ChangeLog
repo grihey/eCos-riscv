@@ -1,3 +1,8 @@
+2017-03-17  Grigoriy Romanov <grigoriy.romanov@syntacore.com>
+
+	* ecod.db: added target bemicrocva9, riscv arch HAL package, 
+				riscv32 variant HAL package  
+
 2009-03-19  Ilija Kocho  <ilijak@siva.com.mk>
 
 	* ecos.db: target mac7100evb added word "Freescale" to the description.

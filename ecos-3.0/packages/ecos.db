@@ -6690,10 +6690,45 @@ target stm3210e_eval {
         to run eCos on the STM3210E EVAL board."
 }
 
-target riscv_scr5_fpga_fire {
-        alias { "RISCV SCR5 on FPGA with some peripherals" riscvscr5f }
+target scr5bemicrocva9_fpga {
+        alias { "AA_RISCV SCR5 on FPGA with some peripherals" riscvscr5f }
         packages {
+                CYGPKG_HAL_RISCV
+                CYGPKG_HAL_RISCV_RISCV32
+                CYGPKG_HAL_RISCV_BEMICROCVA9
         }
-        description "The riscv debugging fpga with scr5."
+        description "The riscv debugging fpga board with scr5 firmware."
 }
 
+package CYGPKG_HAL_RISCV {
+	alias		{ "RISCV common HAL" hal_riscv riscv_hal riscv_arch_hal }
+	directory	hal/riscv/arch/
+	script		hal_ricsv.cdl
+	hardware
+	description "
+    	    The RISCV architecture HAL package provides generic support
+    	    for this processor architecture. It is also necessary to
+    	    select a CPU variant and a specific target platform HAL
+    	    package."
+}
+
+package CYGPKG_HAL_RISCV_RISCV32 {
+	alias		{ "RISCV32 HAL" hal_riscv32 riscv32_hal riscv32_arch_hal }
+	directory	hal/riscv/riscv32
+	script		hal_riscv_riscv32.cdl
+	hardware
+        description "
+           The RISCV 32 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_RISCV_BEMICROCVA9 {
+	alias		{ "RISCV bemicrocva9 board" hal_bemicrocva9 bemicrocva9_hal }
+	directory	hal/riscv/bemicrocva9
+	script		hal_riscv_bemicrocva9.cdl
+	hardware
+	description "
+           The bemicrocva9 HAL package should be used when targetting the
+           actual hardware. "
+}
