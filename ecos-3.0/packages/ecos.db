@@ -6691,7 +6691,7 @@ target stm3210e_eval {
 }
 
 target scr5bemicrocva9_fpga {
-        alias { "AA_RISCV SCR5 on FPGA with some peripherals" riscvscr5f }
+        alias { "AA_RISCV SCR5 on FPGA with some peripherals" scr5bemicrocva9}
         packages {
                 CYGPKG_HAL_RISCV
                 CYGPKG_HAL_RISCV_RISCV32
@@ -6703,7 +6703,7 @@ target scr5bemicrocva9_fpga {
 package CYGPKG_HAL_RISCV {
 	alias		{ "RISCV common HAL" hal_riscv riscv_hal riscv_arch_hal }
 	directory	hal/riscv/arch/
-	script		hal_ricsv.cdl
+	script		hal_riscv.cdl
 	hardware
 	description "
     	    The RISCV architecture HAL package provides generic support

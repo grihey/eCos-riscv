@@ -1,8 +1,8 @@
 # ====================================================================
 #
-#      hal_mips_mips32.cdl
+#      hal_riscv_riscv32.cdl
 #
-#      MIPS 32/64 variant architectural HAL package configuration data
+#      RISCV 32 variant architectural HAL package configuration data
 #
 # ====================================================================
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -39,10 +39,10 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      
-# Original data:  bartv, nickg, dmoseley, t.michals@attbi.com
+# Author(s):      grihey
+# Original data:  grihey
 # Contributors:
-# Date:           2000-06-07
+# Date:           2017-03-17
 #
 #####DESCRIPTIONEND####
 #
@@ -120,11 +120,13 @@ cdl_package CYGPKG_HAL_RISCV_RISCV32 {
             display "Global compiler flags"
             flavor  data
             no_define
+
             # TODO: add march FPU parameterizing
+
             default_value { CYGBLD_GLOBAL_WARNFLAGS .
-                            "-Wa,-march=RV32IMA -m32 -std=gnu99 -O2 \                                                 
-                            -fomit-frame-pointer -fno-exceptions -fno-asynchronous-unwind-tables \
-                            -fno-unwind-tables -fdata-sections -ffunction-sections -fno-common -fno-builtin-printf \"
+                            "-Wa, -march=RV32IMA -m32 -std=gnu99 -O2 " .                                                 
+                            "-fomit-frame-pointer -fno-exceptions -fno-asynchronous-unwind-tables " .
+                            "-fno-unwind-tables -fdata-sections -ffunction-sections -fno-common -fno-builtin-printf"
             }
             description   "
                 This option controls the global compiler flags which
@@ -142,7 +144,5 @@ cdl_package CYGPKG_HAL_RISCV_RISCV32 {
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
         }
-
     }
-    
 }

@@ -2,7 +2,7 @@
 #
 #      hal_riscv_bemicrocva9.cdl
 #
-#      MIPS Malta board HAL package configuration data
+#      RISCV BeMicroCV-A9 board HAL package configuration data
 #
 # ====================================================================
 ## ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -54,7 +54,6 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
     requires      { 
                        (CYGHWR_HAL_RISCV_RISCV32_CORE == "SCR5") && CYGPKG_HAL_RISCV_RISCV32
                   }
-    # requires      
     include_dir   cyg/hal
     description   "
            The BeMicroCV-A9 HAL package should be used when targetting the
@@ -118,16 +117,16 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
         display "Memory layout"
         flavor data
         no_define
-        calculated { CYG_HAL_STARTUP == "RAM" ? "mips_malta_ram" : \
-                                                "mips_malta_rom" }
+        calculated { CYG_HAL_STARTUP == "RAM" ? "riscv_bemicrocva9_ram" : \
+                                                "riscv_bemicrocva9_rom" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mips_malta_ram.ldi>" : \
-                                                    "<pkgconf/mlt_mips_malta_rom.ldi>" }
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_riscv_bemicrocva9_ram.ldi>" : \
+                                                    "<pkgconf/mlt_riscv_bemicrocva9_rom.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -135,8 +134,8 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mips_malta_ram.h>" : \
-                                                    "<pkgconf/mlt_mips_malta_rom.h>" }
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_riscv_bemicrocva9_ram.h>" : \
+                                                    "<pkgconf/mlt_riscv_bemicrocva9_rom.h>" }
         }
     }
 }

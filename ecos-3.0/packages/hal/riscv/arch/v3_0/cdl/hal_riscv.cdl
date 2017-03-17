@@ -48,8 +48,8 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_HAL_MIPS {
-    display "MIPS architecture"
+cdl_package CYGPKG_HAL_RISCV {
+    display "RISCV architecture"
     parent        CYGPKG_HAL
     hardware
     include_dir   cyg/hal
