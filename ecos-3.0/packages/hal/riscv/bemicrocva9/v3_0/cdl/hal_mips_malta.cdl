@@ -1,0 +1,142 @@
+# ====================================================================
+#
+#      hal_riscv_bemicrocva9.cdl
+#
+#      MIPS Malta board HAL package configuration data
+#
+# ====================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      grihey
+# Original data:  bartv
+# Contributors:   grihey
+# Date:           2017-03-17
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
+    display  "BeMicroCV-A9 board"
+    parent        CYGPKG_HAL_RISCV
+    requires      { 
+                       (CYGHWR_HAL_RISCV_RISCV32_CORE == "SCR5") && CYGPKG_HAL_RISCV_RISCV32
+                  }
+    # requires      
+    include_dir   cyg/hal
+    description   "
+           The BeMicroCV-A9 HAL package should be used when targetting the
+           actual hardware."
+
+    compile       platform.S plf_misc.c
+
+    cdl_option CYGBLD_HAL_TARGET_H {
+        display       "Variant header"
+        flavor        data
+	no_define
+
+	calculated { CYGPKG_HAL_RISCV_RISCV32 ? "<pkgconf/hal_riscv_riscv32.h>" : \
+                                              "<pkgconf/hal_riscv_riscv64.h>" }
+	define -file system.h CYGBLD_HAL_TARGET_H
+        description   "Variant header."
+
+        define_proc {
+            puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_riscv_bemicrocva9.h>"
+            puts $::cdl_system_header ""
+            puts $::cdl_system_header "/* Make sure we get the CORE type definitions for HAL_PLATFORM_CPU */"
+            puts $::cdl_system_header "#include CYGBLD_HAL_TARGET_H"
+	    puts $::cdl_system_header "#define HAL_PLATFORM_BOARD    \"BeMicroCV-A9\""
+	    puts $::cdl_system_header "#define HAL_PLATFORM_EXTRA    \"\""
+	    puts $::cdl_system_header ""
+        puts $::cdl_system_header "#if defined(CYGHWR_HAL_RISCV_RISCV32_CORE_SCR5)"
+	    puts $::cdl_system_header "#  define HAL_PLATFORM_CPU    \"RISCV32 SCR5\""
+	    puts $::cdl_system_header "#else"
+	    puts $::cdl_system_header "#  error Unknown Core"
+	    puts $::cdl_system_header "#endif"
+	    puts $::cdl_system_header ""
+        }
+				      
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        legal_values  {"RAM" "ROM"}
+        default_value {"RAM"}
+	no_define
+	define -file system.h CYG_HAL_STARTUP
+        description   "
+            Currently only ROM startup type is supported."
+    }
+
+    # The "-o file" is a workaround for CR100958 - without it the
+    # output file would end up in the source directory under CygWin.
+    # n.b. grep does not behave itself under win32
+    make -priority 1 {
+        <PREFIX>/include/cyg/hal/plf_defs.inc : <PACKAGE>/src/plf_mk_defs.c
+        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,plf_defs.tmp -o plf_mk_defs.tmp -S $<
+        fgrep .equ plf_mk_defs.tmp | sed s/#// > $@
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 plf_defs.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm plf_defs.tmp plf_mk_defs.tmp
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated { CYG_HAL_STARTUP == "RAM" ? "mips_malta_ram" : \
+                                                "mips_malta_rom" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display "Memory layout linker script fragment"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mips_malta_ram.ldi>" : \
+                                                    "<pkgconf/mlt_mips_malta_rom.ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display "Memory layout header file"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mips_malta_ram.h>" : \
+                                                    "<pkgconf/mlt_mips_malta_rom.h>" }
+        }
+    }
+}
