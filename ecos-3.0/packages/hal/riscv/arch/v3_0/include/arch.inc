@@ -56,7 +56,7 @@
 ##
 ##=============================================================================
 
-#include <cyg/hal/riscv.inc>
+//#include <cyg/hal/riscv.inc>
 //#include <cyg/hal/variant.inc>
 
 #define mips_regsize 	4

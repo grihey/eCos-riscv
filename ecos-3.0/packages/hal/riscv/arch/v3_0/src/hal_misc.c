@@ -52,15 +52,15 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>         // Base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
+// #include <cyg/infra/cyg_trac.h>         // tracing macros
+// #include <cyg/infra/cyg_ass.h>          // assertion macros
 
 #include <cyg/hal/hal_arch.h>           // architectural definitions
 
-#include <cyg/hal/hal_intr.h>           // Interrupt handling
+// #include <cyg/hal/hal_intr.h>           // Interrupt handling
 
-#include <cyg/hal/hal_cache.h>          // Cache handling
-#include <cyg/hal/hal_if.h>             // hal_ctrlc_isr()
+// #include <cyg/hal/hal_cache.h>          // Cache handling
+// #include <cyg/hal/hal_if.h>             // hal_ctrlc_isr()
 
 cyg_uint32 hal_msbit_index(cyg_uint32 mask)
 {
