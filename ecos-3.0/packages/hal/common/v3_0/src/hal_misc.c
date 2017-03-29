@@ -5,37 +5,37 @@
 //      Common HAL miscellaneous functions
 //
 //==========================================================================
-// ####ECOSGPLCOPYRIGHTBEGIN####                                            
-// -------------------------------------------                              
-// This file is part of eCos, the Embedded Configurable Operating System.   
+// ####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
-// eCos is free software; you can redistribute it and/or modify it under    
-// the terms of the GNU General Public License as published by the Free     
-// Software Foundation; either version 2 or (at your option) any later      
-// version.                                                                 
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later
+// version.
 //
-// eCos is distributed in the hope that it will be useful, but WITHOUT      
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
-// for more details.                                                        
+// eCos is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
 //
-// You should have received a copy of the GNU General Public License        
-// along with eCos; if not, write to the Free Software Foundation, Inc.,    
-// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+// You should have received a copy of the GNU General Public License
+// along with eCos; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// As a special exception, if other files instantiate templates or use      
-// macros or inline functions from this file, or you compile this file      
-// and link it with other works to produce a work based on this file,       
-// this file does not by itself cause the resulting work to be covered by   
-// the GNU General Public License. However the source code for this file    
-// must still be made available in accordance with section (3) of the GNU   
-// General Public License v2.                                               
+// As a special exception, if other files instantiate templates or use
+// macros or inline functions from this file, or you compile this file
+// and link it with other works to produce a work based on this file,
+// this file does not by itself cause the resulting work to be covered by
+// the GNU General Public License. However the source code for this file
+// must still be made available in accordance with section (3) of the GNU
+// General Public License v2.
 //
-// This exception does not invalidate any other reasons why a work based    
-// on this file might be covered by the GNU General Public License.         
-// -------------------------------------------                              
-// ####ECOSGPLCOPYRIGHTEND####                                              
+// This exception does not invalidate any other reasons why a work based
+// on this file might be covered by the GNU General Public License.
+// -------------------------------------------
+// ####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -65,7 +65,7 @@
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
-// Macro for finding return address. 
+// Macro for finding return address.
 #ifndef CYGARC_HAL_GET_RETURN_ADDRESS
 
 #define CYGARC_HAL_GET_RETURN_ADDRESS(_x_, _dummy_)     \
@@ -116,7 +116,7 @@ cyg_hal_is_break(char *buf, int size)
 // used. Yes, it's ugly.
 int _cyg_hal_compiler_dummy;
 
-void 
+void
 cyg_hal_user_break( CYG_ADDRWORD *regs )
 {
 #if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs) \
@@ -135,10 +135,10 @@ cyg_hal_user_break( CYG_ADDRWORD *regs )
     CYGACC_CALL_IF_INSTALL_BPT_FN((void *)__pc);
 
     CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP(_cyg_hal_compiler_dummy);
-    
+
 #else
 
-    HAL_BREAKPOINT(breakinst);
+    //HAL_BREAKPOINT(breakinst);
 
 #endif
 }
@@ -147,7 +147,7 @@ cyg_hal_user_break( CYG_ADDRWORD *regs )
 //--------------------------------------------------------------------------
 // The system default interrupt ISR. It calls the architecture default
 // ISR as well if necessary.
-externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, 
+externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector,
                                         CYG_ADDRWORD data);
 
 cyg_uint32
@@ -161,7 +161,7 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
           defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&           \
           defined(HAL_CTRLC_ISR))
 
-#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN    
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 #if CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     int gdb_vector = -1;
     // This check only to avoid crash on older stubs in case of unhandled

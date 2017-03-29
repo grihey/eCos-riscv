@@ -56,7 +56,6 @@
 #include <pkgconf/hal.h>
 
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
-#include <cyg/hal/mips-regs.h>
 
 #ifdef CYGPKG_KERNEL
 # include <pkgconf/kernel.h>	

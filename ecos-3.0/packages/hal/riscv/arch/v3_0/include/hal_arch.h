@@ -43,8 +43,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    grihey
-// Contributors: nickg, dmoseley, nickg
-// Date:         1999-02-17
+// Contributors: 
+// Date:         2017-03-22
 // Purpose:      Define architecture abstractions
 // Usage:        #include <cyg/hal/hal_arch.h>
 //              
@@ -65,22 +65,33 @@
 // Notes: This structure is carefully laid out. It is a multiple of 8
 // bytes and the pc and badvr fields are positioned to ensure that
 // they are on 8 byte boundaries. 
+#ifdef CYGHWR_HAL_RISCV_64BIT
+# define CYG_HAL_RISCV_REG CYG_WORD64
+# define CYG_HAL_RISCV_REG_SIZE 8
+#else
+# define CYG_HAL_RISCV_REG CYG_WORD32
+# define CYG_HAL_RISCV_REG_SIZE 4
+#endif //CYGHWR_HAL_RISCV_64BIT
 
-#define CYG_HAL_RISCV_REG CYG_WORD32
-#define CYG_HAL_RISCV_REG_SIZE 4
+#ifdef CYGHWR_HAL_RISCV_FPU
+# ifdef CYGHWR_HAL_RISCV_FPU_64BIT
+#  define CYG_HAL_RISCV_FPU_REG CYG_WORD64
+#  define CYG_HAL_RISCV_FPU_REG_SIZE 8
+# else
+#  define CYG_HAL_RISCV_FPU_REG CYG_WORD32
+#  define CYG_HAL_RISCV_FPU_REG_SIZE 4
+# endif //CYGHWR_HAL_RISCV_FPU_64BIT
+#endif //CYGHWR_HAL_RISCV_FPU
 
-#define CYG_HAL_RISCV_FPU_REG CYG_WORD32
 
 typedef struct 
 {
-    CYG_HAL_RISCV_REG    d[32];          /* Data regs                    */
+    CYG_HAL_RISCV_REG    d[31];          /* Data regs                    */
 #ifdef CYGHWR_HAL_RISCV_FPU
     CYG_HAL_RISCV_FPU_REG f[32];
 #endif
-    CYG_WORD32           mstatus;             /* Status Reg                   */
-    CYG_HAL_RISCV_REG    pc;             /* Program Counter              */
-    CYG_HAL_RISCV_REG    mcause;             /* Cause of exception */
-    CYG_HAL_RISCV_REG    mbadaddr;             /* mbadaddr of memcall */
+    CYG_WORD32           mstatus;               /* Status Reg                   */
+    CYG_HAL_RISCV_REG    mepc;                  /* Mepc of memcall */
 } HAL_SavedRegisters;
 
 
@@ -123,11 +134,35 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     (_regs_)->d[1] = (CYG_HAL_RISCV_REG)(_entry_);    /* x1 = RA = entry point  */      \
     (_regs_)->d[2] = (CYG_HAL_RISCV_REG)(_sp_);       /* x2 = SP = top of stack */      \
     (_regs_)->d[4] = (CYG_HAL_RISCV_REG)(_thread_);   /* x4 = arg1 = thread ptr */      \
-    (_regs_)->pc = (CYG_WORD)(_entry_);               /* PC = entry point       */      \
     (_regs_)->mstatus = 0x00000001;                   /* SR = int en  1         */      \
-    (_regs_)->mcause = 0x00000000;                   /* SR = int en  1         */      \
+    (_regs_)->mepc = 0x00000000;                   /* SR = int en  1         */      \
     _sparg_ = (CYG_ADDRESS)_regs_;                                                      \
 }
+
+//--------------------------------------------------------------------------
+// HAL setjmp
+// Note: These definitions are repeated in hal_arch.h. If changes are
+// required remember to update both sets.
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_X8        1
+#define CYGARC_JMP_BUF_X9        2
+#define CYGARC_JMP_BUF_X18       3
+#define CYGARC_JMP_BUF_X19       4
+#define CYGARC_JMP_BUF_X20       5
+#define CYGARC_JMP_BUF_X21       6
+#define CYGARC_JMP_BUF_X22       7
+#define CYGARC_JMP_BUF_X23       8
+#define CYGARC_JMP_BUF_X24       9
+#define CYGARC_JMP_BUF_X25      10
+#define CYGARC_JMP_BUF_X26      11
+#define CYGARC_JMP_BUF_X27      12
+
+#define CYGARC_JMP_BUF_SIZE     13
+
+typedef CYG_HAL_RISCV_REG hal_jmp_buf[CYGARC_JMP_BUF_SIZE];
+
+externC int hal_setjmp(hal_jmp_buf env);
+externC void hal_longjmp(hal_jmp_buf env, int val);
 
 //--------------------------------------------------------------------------
 // Context switch macros.
@@ -146,6 +181,7 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 #define HAL_THREAD_LOAD_CONTEXT(_tspptr_)                               \
         hal_thread_load_context( (CYG_ADDRESS)_tspptr_ );
 
+
 //--------------------------------------------------------------------------
 // Execution reorder barrier.
 // When optimizing the compiler can reorder code. In multithreaded systems
@@ -155,144 +191,6 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // keep it.
 
 #define HAL_REORDER_BARRIER() asm volatile ( "" : : : "memory" )
-
-//--------------------------------------------------------------------------
-// Breakpoint support
-// HAL_BREAKPOINT() is a code sequence that will cause a breakpoint to
-// happen if executed.
-// HAL_BREAKINST is the value of the breakpoint instruction and
-// HAL_BREAKINST_SIZE is its size in bytes.
-// HAL_BREAKINST_TYPE is the type.
-
-#define HAL_BREAKPOINT(_label_)                 \
-asm volatile (" .globl  " #_label_ ";"          \
-              #_label_":"                       \
-              " break   5"                      \
-    );
-
-#define HAL_BREAKINST           0x0005000d
-
-#define HAL_BREAKINST_SIZE      4
-
-#define HAL_BREAKINST_TYPE      cyg_uint32
-
-//--------------------------------------------------------------------------
-// Thread register state manipulation for GDB support.
-
-// Default to a 32 bit register size for GDB register dumps.
-#ifndef CYG_HAL_GDB_REG
-#define CYG_HAL_GDB_REG CYG_WORD32
-#endif
-
-// Translate a stack pointer as saved by the thread context macros above into
-// a pointer to a HAL_SavedRegisters structure.
-#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )          \
-        (_regs_) = (HAL_SavedRegisters *)(_sp_)
-
-#if 0
-// If the CPU has an FPU, we also need to move the FPU registers.
-#ifdef CYGHWR_HAL_MIPS_FPU
-#define HAL_GET_GDB_FPU_REGISTERS( _regval_ , _regs_ )  \
-CYG_MACRO_START                                         \
-    int _i_;                                            \
-    for( _i_ = 0; _i_ < 32; _i_++ )                     \
-        _regval_[38+_i_] = (_regs_)->f[_i_];            \
-    _regval_[70] = (_regs_)->fcr31;                     \
-CYG_MACRO_END
-#define HAL_SET_GDB_FPU_REGISTERS( _regs_ , _regval_ )  \
-CYG_MACRO_START                                         \
-    int _i_;                                            \
-    for( _i_ = 0; _i_ < 32; _i_++ )                     \
-        (_regs_)->f[_i_] = _regval_[38+_i_];            \
-    (_regs_)->fcr31 = _regval_[70];                     \
-CYG_MACRO_END
-#else
-#define HAL_GET_GDB_FPU_REGISTERS( _regval_ , _regs_ )
-#define HAL_SET_GDB_FPU_REGISTERS( _regs_ , _regval_ )
-#endif
-#endif
-
-// Copy a set of registers from a HAL_SavedRegisters structure into a
-// GDB ordered array.    
-#if 0
-#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             \
-{                                                               \
-    CYG_HAL_GDB_REG *_regval_ = (CYG_HAL_GDB_REG *)(_aregval_); \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < 32; _i_++ )                             \
-        _regval_[_i_] = (_regs_)->d[_i_];                       \
-                                                                \
-    HAL_GET_GDB_FPU_REGISTERS( _regval_, _regs_ );              \
-                                                                \
-    _regval_[32] = (_regs_)->sr;                                \
-    _regval_[33] = (_regs_)->lo;                                \
-    _regval_[34] = (_regs_)->hi;                                \
-    _regval_[35] = (_regs_)->badvr;                             \
-    _regval_[36] = (_regs_)->cause;                             \
-    _regval_[37] = (_regs_)->pc;                                \
-                                                                \
-    HAL_GET_GDB_CP0_REGISTERS( _regval_, _regs_ );              \
-}
-#endif
-
-// Copy a GDB ordered array into a HAL_SavedRegisters structure.
-#if 0
-#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
-{                                                               \
-    CYG_HAL_GDB_REG *_regval_ = (CYG_HAL_GDB_REG *)(_aregval_); \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < 32; _i_++ )                             \
-        (_regs_)->d[_i_] = _regval_[_i_];                       \
-                                                                \
-    HAL_SET_GDB_FPU_REGISTERS( _regs_, _regval_ );              \
-                                                                \
-    (_regs_)->sr = _regval_[32];                                \
-    (_regs_)->lo = _regval_[33];                                \
-    (_regs_)->hi = _regval_[34];                                \
-    (_regs_)->badvr = _regval_[35];                             \
-    (_regs_)->cause = _regval_[36];                             \
-    (_regs_)->pc = _regval_[37];                                \
-                                                                \
-    HAL_SET_GDB_CP0_REGISTERS( _regval_, _regs_ );              \
-}
-#endif
-
-//--------------------------------------------------------------------------
-// HAL setjmp
-// Note: These definitions are repeated in hal_arch.h. If changes are
-// required remember to update both sets.
-
-#define CYGARC_JMP_BUF_SP        0
-#define CYGARC_JMP_BUF_R16       1
-#define CYGARC_JMP_BUF_R17       2
-#define CYGARC_JMP_BUF_R18       3
-#define CYGARC_JMP_BUF_R19       4
-#define CYGARC_JMP_BUF_R20       5
-#define CYGARC_JMP_BUF_R21       6
-#define CYGARC_JMP_BUF_R22       7
-#define CYGARC_JMP_BUF_R23       8
-#define CYGARC_JMP_BUF_R28       9
-#define CYGARC_JMP_BUF_R30      10
-#define CYGARC_JMP_BUF_R31      11
-
-#define CYGARC_JMP_BUF_SIZE     12
-
-typedef cyg_uint32 hal_jmp_buf[CYGARC_JMP_BUF_SIZE];
-
-externC int hal_setjmp(hal_jmp_buf env);
-externC void hal_longjmp(hal_jmp_buf env, int val);
-
-//-------------------------------------------------------------------------
-// Idle thread code.
-// This macro is called in the idle thread loop, and gives the HAL the
-// chance to insert code. Typical idle thread behaviour might be to halt the
-// processor.
-
-externC void hal_idle_thread_action(cyg_uint32 loop_count);
-
-#define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
 
 //--------------------------------------------------------------------------
 // Minimal and sensible stack sizes: the intention is that applications
@@ -310,16 +208,11 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGNUM_HAL_STACK_FRAME_SIZE (48)
 
 // Stack needed for a context switch:
-#if defined(CYGHWR_HAL_MIPS_FPU)
-# if defined(CYGHWR_HAL_MIPS_FPU_64BIT)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*CYG_HAL_RISCV_REG_SIZE)+(32*8))
-# elif defined(CYGHWR_HAL_MIPS_FPU_32BIT)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*CYG_HAL_RISCV_REG_SIZE)+(32*4))
-# else
-# error MIPS FPU register size not defined
-# endif
+#if defined(CYGHWR_HAL_RISCV_FPU)
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+2)*CYG_HAL_RISCV_REG_SIZE)+(32*CYG_HAL_RISCV_FPU_REG_SIZE))
+#endif
 #else
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE ((32+10)*CYG_HAL_RISCV_REG_SIZE)
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE ((32+2)*CYG_HAL_RISCV_REG_SIZE)
 #endif
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
@@ -346,52 +239,35 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 #endif
 
-#endif /* __ASSEMBLER__ */
 
-// Convenience macros for accessing memory cached or uncached
-#define CYGARC_KSEG_MASK                               (0xE0000000)
-#define CYGARC_KSEG_CACHED                             (0x80000000)
-#define CYGARC_KSEG_UNCACHED                           (0xA0000000)
-#define CYGARC_KSEG_CACHED_BASE                        (0x80000000)
-#define CYGARC_KSEG_UNCACHED_BASE                      (0xA0000000)
-#ifndef __ASSEMBLER__
-#define CYGARC_CACHED_ADDRESS(x)                       ((((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_CACHED)
-#define CYGARC_UNCACHED_ADDRESS(x)                     ((((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_UNCACHED)
-#define CYGARC_PHYSICAL_ADDRESS(x)                     (((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK)
-#else // __ASSEMBLER__
-#define CYGARC_CACHED_ADDRESS(x)                       ((((x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_CACHED)
-#define CYGARC_UNCACHED_ADDRESS(x)                     ((((x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_UNCACHED)
-#define CYGARC_PHYSICAL_ADDRESS(x)                     (((x)) & ~CYGARC_KSEG_MASK)
-#define CYGARC_ADDRESS_REG_CACHED(reg)                 \
-        and     reg, reg, ~CYGARC_KSEG_MASK;           \
-        or      reg, reg, CYGARC_KSEG_CACHED
-#define CYGARC_ADDRESS_REG_UNCACHED(reg)               \
-        and     reg, reg, ~CYGARC_KSEG_MASK;           \
-        or      reg, reg, CYGARC_KSEG_UNCACHED
-#endif /* __ASSEMBLER__ */
+#define HAL_DISABLE_INTERRUPTS(_old_)           \
+{                                               \
+    asm volatile (                              \
+        "nop"                        \
+        );                                      \
+}
 
-//--------------------------------------------------------------------------
-// Macros for switching context between two eCos instances (jump from
-// code in ROM to code in RAM or vice versa).
-#define CYGARC_HAL_SAVE_GP()                    \
-    CYG_MACRO_START                             \
-    register CYG_ADDRWORD __gp_save;            \
-    asm volatile ( "move   %0,$28;"             \
-                   ".extern _gp;"               \
-                   "la     $gp,_gp;"            \
-                     : "=r"(__gp_save))
+#define HAL_ENABLE_INTERRUPTS()                 \
+{                                               \
+    asm volatile (                              \
+        "nop"                        \
+        );                                      \
+}
 
-#define CYGARC_HAL_RESTORE_GP()                                 \
-    asm volatile ( "move   $gp,%0;" :: "r"(__gp_save) );        \
-    CYG_MACRO_END
+#define HAL_RESTORE_INTERRUPTS(_old_)           \
+{                                               \
+    asm volatile (                              \
+        "nop"                        \
+        );                                      \
+}
 
+#define HAL_QUERY_INTERRUPTS( _state_ )         \
+{                                               \
+    asm volatile (                              \
+        "nop"                        \
+        );                                      \
+}
 
-//--------------------------------------------------------------------------
-// Macro for finding return address. 
-#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_, _dummy_) \
-  asm volatile ( "move %0,$31;" : "=r" (_x_) )
-
-#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP(_dummy_)
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_HAL_ARCH_H
