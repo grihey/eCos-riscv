@@ -54,9 +54,7 @@
 //===========================================================================*/
 
 #include <pkgconf/hal.h>
-
 #include <cyg/infra/cyg_type.h>
-
 #include <cyg/hal/hal_if.h>
 
 #define HAL_DIAG_INIT() hal_if_diag_init()
@@ -69,7 +67,7 @@ externC void hal_if_diag_read_char(char *c);
 //-----------------------------------------------------------------------------
 // LED
 
-externC void hal_diag_led(int n);
+//externC void hal_diag_led(int n);
 
 //-----------------------------------------------------------------------------
 // end of hal_diag.h

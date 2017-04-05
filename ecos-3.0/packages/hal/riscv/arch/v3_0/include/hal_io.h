@@ -62,7 +62,7 @@
 
 #include <cyg/infra/cyg_type.h>
 
-//#include <cyg/hal/plf_io.h>
+#include <cyg/hal/plf_io.h>
 
 //-----------------------------------------------------------------------------
 // IO Register address.

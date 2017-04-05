@@ -60,7 +60,7 @@
 //#include <cyg/hal/variant.inc>
 
 #ifdef CYGHWR_HAL_RISCV_64BIT
-# define riscv_regsize 	4
+# define riscv_regsize 	8
 # define STORE  sd
 # define LOAD   ld
 #else
@@ -90,10 +90,7 @@
 #define riscvreg_mepc        (riscvreg_mstatus+riscv_regsize)
 #define	riscvreg_size	    (riscvreg_mepc+riscv_regsize)
 
-# The following expression ensures that the decrement is always a
-# multiple of 16 bytes. This is a requirement of the MEABI used in
-# MIPS32/64 targets.
-
+/* 
 .altmacro
 .macro hal_fpu_save_regs base:req
 
@@ -165,6 +162,6 @@
     LOADF       f29, (29 * riscv_regsize)+riscvreg_fpureg(\base)
     LOADF       f30, (30 * riscv_regsize)+riscvreg_fpureg(\base)
     LOADF       f31, (31 * riscv_regsize)+riscvreg_fpureg(\base)
-.endm
+.endm */
 
 #endif //CYGONCE_HAL_ARCH_INC

@@ -77,7 +77,7 @@ void hal_platform_init(void)
 /*------------------------------------------------------------------------*/
 /* Reset support                                                          */
 
-void hal_malta_reset(void)
+void hal_bemicrocva9_reset(void)
 {
 }
 

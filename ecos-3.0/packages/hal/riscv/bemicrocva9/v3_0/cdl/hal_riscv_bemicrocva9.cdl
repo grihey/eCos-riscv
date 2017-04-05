@@ -59,7 +59,7 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
            The BeMicroCV-A9 HAL package should be used when targetting the
            actual hardware."
 
-    compile       platform.S plf_misc.c
+    compile       platform.S plf_misc.c hal_diag.c
 
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
@@ -107,7 +107,7 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
     # n.b. grep does not behave itself under win32
     make -priority 1 {
         <PREFIX>/include/cyg/hal/plf_defs.inc : <PACKAGE>/src/plf_mk_defs.c
-        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,plf_defs.tmp -o plf_mk_defs.tmp -S $<
+        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         fgrep .equ plf_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 plf_defs.tmp >> $(notdir $@).deps

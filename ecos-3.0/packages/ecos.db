@@ -6690,8 +6690,8 @@ target stm3210e_eval {
         to run eCos on the STM3210E EVAL board."
 }
 
-target scr5bemicrocva9_fpga {
-        alias { "AA_RISCV SCR5 on FPGA with some peripherals" scr5bemicrocva9}
+target riscv_bemicrocva9 {
+        alias { "AA_RISCV SCR5 on FPGA with some peripherals" riscv_bemicrocva9 bemicrocva9}
         packages {
                 CYGPKG_HAL_RISCV
                 CYGPKG_HAL_RISCV_RISCV32

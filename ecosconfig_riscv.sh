@@ -11,3 +11,9 @@ INST_DIR=$TOPDIR/../Configs/bemicrocva9_install
 rm -rf $BLDDIR
 mkdir -p $BLDDIR && cd $BLDDIR
 $ECOSTOOL --config=$CONFIG_ECC --srcdir=$REPO_DIR --prefix=$INST_DIR tree
+
+#riscv32-unknown-elf-gcc -nostartfiles -Ttarget.ld -o image.elf vectors.o libtarget.a helloc.o
+
+#riscv32-unknown-elf-objdump -x -s -w -D vectors.o > vectors.dump
+#riscv32-unknown-elf-objdump -x -s -w -D libtarget.a > libtarget.dump
+#riscv32-unknown-elf-objdump -x -s -w -D image.elf > image.dump
