@@ -12,7 +12,8 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_rom_vectors(ram, 0x0, LMA_EQ_VMA)
+    SECTION_fixed_vectors(ram, 0x0, LMA_EQ_VMA)
+    SECTION_rom_vectors(ram, 0x200, LMA_EQ_VMA)
     SECTION_ROMISC (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_RELOCS (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_init (ram, ALIGN (0x4), LMA_EQ_VMA)

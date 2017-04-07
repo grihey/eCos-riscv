@@ -216,3 +216,40 @@ fill_block:
     j		fill_block
 fb_end:
     ret
+
+    .section ".fixed_vectors"
+// Space for the virtual vectors        
+    .balign 4
+// Vectors used to communicate between eCos and ROM environments
+    .globl  hal_virtual_vector_table
+hal_virtual_vector_table:
+    .rept   64                  // CYGNUM_CALL_IF_TABLE_SIZE
+    .long   0
+    .endr
+    .previous
+
+	.extern hal_default_isr
+	
+	.data
+
+	.globl	hal_interrupt_handlers
+hal_interrupt_handlers:
+	.long	hal_default_isr
+	.long	hal_default_isr
+	.long	hal_default_isr
+	.long	hal_default_isr
+	.long	hal_default_isr
+	.long	hal_default_isr
+
+
+	.globl	hal_interrupt_data
+hal_interrupt_data:
+	.rept	6
+	.long	0
+	.endr
+
+	.globl	hal_interrupt_objects
+hal_interrupt_objects:
+	.rept	6
+	.long	0
+	.endr

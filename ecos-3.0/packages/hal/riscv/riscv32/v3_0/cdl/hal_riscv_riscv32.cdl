@@ -74,6 +74,13 @@ cdl_package CYGPKG_HAL_RISCV_RISCV32 {
         calculated 0
     }
     
+    cdl_option  CYGHWR_HAL_RISCV_CPU_FREQ {
+        display "Variant frequency"
+        flavor data
+        default_value {"20000000"}
+        define -file system.h CYGHWR_HAL_RISCV_CPU_FREQ 
+    }
+    
     define_proc {
         puts $::cdl_header "#include <pkgconf/hal_riscv.h>"
     }

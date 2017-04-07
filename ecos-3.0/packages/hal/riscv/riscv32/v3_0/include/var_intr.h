@@ -66,6 +66,7 @@
 
 #include <cyg/hal/plf_intr.h>
  
+#define CYGNUM_HAL_ISR_COUNT    8
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_IMP_INTR_H
 // End of imp_intr.h

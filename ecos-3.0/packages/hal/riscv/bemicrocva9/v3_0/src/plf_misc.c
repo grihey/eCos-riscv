@@ -158,5 +158,21 @@ cyg_hal_plf_ide_init(void)
 }
 
 
+void hal_interrupt_mask(int vector)
+{
+}
+void hal_interrupt_unmask(int vector)
+{
+}
+void hal_interrupt_acknowledge(int vector)
+{
+}
+void hal_interrupt_configure(int vector, int level, int up)
+{
+}
+void hal_interrupt_set_level(int vector, int level)
+{
+}
+
 /*------------------------------------------------------------------------*/
 /* End of plf_misc.c                                                      */

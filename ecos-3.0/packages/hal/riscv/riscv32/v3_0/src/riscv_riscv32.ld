@@ -58,6 +58,11 @@ GROUP(libtarget.a libgcc.a)
 #if defined(CYG_HAL_STARTUP_RAM)
 
 /* this version for RAM startup */
+#define SECTION_fixed_vectors(_region_, _vma_, _lma_) \
+    .rom_vectors _vma_ : _lma_ \
+    { KEEP (*(.fixed_vectors)) \
+    . = ALIGN(0x100);  } \
+    > _region_
 #define SECTION_rom_vectors(_region_, _vma_, _lma_) \
     .rom_vectors _vma_ : _lma_ \
     { KEEP (*(.trap_vectors)) \
@@ -208,5 +213,9 @@ GROUP(libtarget.a libgcc.a)
     } > _region_                    
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \
+
+#ifndef CYGPKG_HAL_MIPS_SIM
+hal_virtual_vector_table = 0x0;
+#endif
 
 #include CYGHWR_MEMORY_LAYOUT_LDI

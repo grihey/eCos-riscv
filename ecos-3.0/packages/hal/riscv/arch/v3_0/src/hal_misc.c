@@ -79,3 +79,8 @@ cyg_uint32 hal_lsbit_index(cyg_uint32 mask)
     }
     return (-1);
 }
+
+externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    return 0;
+}
