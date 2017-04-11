@@ -222,6 +222,10 @@ fb_end:
 __default_interrupt_vsr:
     ret
 
+    .globl __default_exception_vsr
+__default_exception_vsr:
+    ret
+
 #ifndef CYG_HAL_MIPS_VSR_TABLE_DEFINED
 	
 ##	.section ".vsr_table","a"
