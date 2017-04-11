@@ -217,6 +217,26 @@ fill_block:
 fb_end:
     ret
 
+    /*empty*/
+    .globl __default_interrupt_vsr
+__default_interrupt_vsr:
+    ret
+
+#ifndef CYG_HAL_MIPS_VSR_TABLE_DEFINED
+	
+##	.section ".vsr_table","a"
+	
+	.data
+	.globl	hal_vsr_table
+
+hal_vsr_table:	
+	.long	__default_interrupt_vsr	
+	.rept	63
+	.long	__default_exception_vsr	
+	.endr
+    .previous
+#endif	
+
     .section ".fixed_vectors"
 // Space for the virtual vectors        
     .balign 4

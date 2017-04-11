@@ -66,7 +66,6 @@
 
 #include <cyg/hal/var_intr.h>
 
-
 externC volatile CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
 externC volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
 externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
@@ -75,25 +74,79 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 
 #define HAL_DEFAULT_ISR hal_default_isr
 
+#define CYGNUM_HAL_VSR_MAX                  15
+
 // VSR table
-//externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_MAX+1];
+externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_MAX+1];
+
+#define CYGNUM_HAL_MTIMER_INTERRUPT         7
+
+#ifndef CYGNUM_HAL_INTERRUPT_RTC
+#define CYGNUM_HAL_INTERRUPT_RTC            CYGNUM_HAL_MTIMER_INTERRUPT 
+#endif
+
+#define HAL_DISABLE_INTERRUPTS(_old_)		    \
+CYG_MACRO_START                                 \
+    __asm volatile 	(                           \
+                "csrrci %0, mstatus, 1;"        \
+                : "=r"(_old_)                   \
+                :                               \
+                );                              \
+CYG_MACRO_END
+
+#define HAL_ENABLE_INTERRUPTS()					\
+CYG_MACRO_START                                 \
+    __asm volatile 	( "csrs mstatus,1" )        \
+CYG_MACRO_END
+
+#define HAL_RESTORE_INTERRUPTS(_old_)           \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+            "csrw   mstatus, %0\n"              \
+            :                                   \
+            :"r"(_old_)                         \
+            );                                  \
+CYG_MACRO_END
+
+#define HAL_CLOCK_INITIALIZE( _period_ )        \
+CYG_MACRO_START                                 \
+    asm volatile(                               \
+            "csrw   mtime, x0\n"                \
+            "csrw   mtimecmp, %0\n"             \
+            :                                   \
+            :"r"( _period_ )                    \
+            );                                  \
+CYG_MACRO_END
+
+#define HAL_CLOCK_RESET( _vector_, _period_ )   \
+CYG_MACRO_START                                 \
+    asm volatile(                               \
+            "csrw   mtime, x0\n"                \
+            "csrw   mtimecmp, %0\n"             \
+            :                                   \
+            :"r"( _period_ )                    \
+            );                                  \
+CYG_MACRO_END
+    
 
 #define CYGARC_HAL_SAVE_GP()                    \
     CYG_MACRO_START                             \
     register CYG_ADDRWORD __gp_save;            \
-    asm volatile ( "mv   %0,x3;"             \
+    asm volatile ( "mv   %0,x3;"                \
                    ".extern _gp;"               \
-                   "la     x3,_gp;"            \
+                   "la     x3,_gp;"             \
                      : "=r"(__gp_save))
 
 #define CYGARC_HAL_RESTORE_GP()                 \
-    asm volatile ( "move   x3,%0;" :: "r"(__gp_save) );        \
+    asm volatile (                              \
+            "move   x3,%0;"                     \
+            :: "r"(__gp_save) );                \
     CYG_MACRO_END
 
 #define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = 0
 
 #define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )           \
-{                                                                           \
+CYG_MACRO_START                                                             \
     cyg_uint32 _index_;                                                     \
     HAL_TRANSLATE_VECTOR( _vector_, _index_ );                              \
                                                                             \
@@ -103,10 +156,10 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
         hal_interrupt_data[_index_] = (CYG_ADDRWORD)_data_;                 \
         hal_interrupt_objects[_index_] = (CYG_ADDRESS)_object_;             \
     }                                                                       \
-}
+CYG_MACRO_END
 
 #define HAL_INTERRUPT_DETACH( _vector_, _isr_ )                         \
-{                                                                       \
+CYG_MACRO_START                                                         \
     cyg_uint32 _index_;                                                 \
     HAL_TRANSLATE_VECTOR( _vector_, _index_ );                          \
                                                                         \
@@ -116,7 +169,29 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
         hal_interrupt_data[_index_] = 0;                                \
         hal_interrupt_objects[_index_] = 0;                             \
     }                                                                   \
-}
+CYG_MACRO_END
+
+#define HAL_INTERRUPT_IN_USE( _vector_, _state_)                          \
+CYG_MACRO_START                                                           \
+    cyg_uint32 _index_;                                                   \
+    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                           \
+                                                                          \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)HAL_DEFAULT_ISR ) \
+        (_state_) = 0;                                                    \
+    else                                                                  \
+        (_state_) = 1;                                                    \
+CYG_MACRO_END
+
+#define HAL_VSR_GET( _vector_, _pvsr_ )                                   \
+    *(_pvsr_) = (void (*)())hal_vsr_table[_vector_];
+    
+
+#define HAL_VSR_SET( _vector_, _vsr_, _poldvsr_ ) CYG_MACRO_START         \
+    if( (void*)_poldvsr_ != NULL)                                         \
+        *(CYG_ADDRESS *)_poldvsr_ = (CYG_ADDRESS)hal_vsr_table[_vector_]; \
+    hal_vsr_table[_vector_] = (CYG_ADDRESS)_vsr_;                         \
+CYG_MACRO_END
+
 // Causes numbers
 // #define
 // #define

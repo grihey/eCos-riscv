@@ -63,6 +63,7 @@ GROUP(libtarget.a libgcc.a)
     { KEEP (*(.fixed_vectors)) \
     . = ALIGN(0x100);  } \
     > _region_
+
 #define SECTION_rom_vectors(_region_, _vma_, _lma_) \
     .rom_vectors _vma_ : _lma_ \
     { KEEP (*(.trap_vectors)) \

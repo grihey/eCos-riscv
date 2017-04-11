@@ -1,3 +1,7 @@
  -- Grigoriy Romanov <grigoriy.romanov@syntacore.com>  Thu, 16 Feb 2017 21:35:01 +0300
 
  + directory tree: created.
+
+ -- Grigoriy Romanov <grigoriy.romanov@syntacore.com>  Tue, 11 Apr 2017 18:06:46 +0300
+
+ * hal_intr.h: added base interrupt manipulation macros.

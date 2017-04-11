@@ -145,6 +145,54 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
         @rm plf_defs.tmp plf_mk_defs.tmp
     }
 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   1
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           ."
+    }
+
+    cdl_option  CYGHWR_HAL_RISCV_CPU_FREQ {
+        display "Variant frequency"
+        flavor data
+        default_value {"20000000"}
+        define -file system.h CYGHWR_HAL_RISCV_CPU_FREQ 
+    }
+
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        flavor        none
+    
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value { ( CYGHWR_HAL_RISCV_CPU_FREQ / 2) / CYGNUM_HAL_RTC_DENOMINATOR }
+            description   "
+                The count and compare registers of the bemicrocva9 are used
+                to drive the eCos kernel RTC. The count register
+                increments at half the CPU clock speed."
+        }
+    }
+
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data

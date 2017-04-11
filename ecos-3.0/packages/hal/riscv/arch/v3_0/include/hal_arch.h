@@ -56,6 +56,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+
 //#include <cyg/hal/var_arch.h>
 
 //--------------------------------------------------------------------------
@@ -112,7 +113,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 }
 #else
 #define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )
-#endif
+#endif //CYGHWR_HAL_RISCV_FPU
 
 //--------------------------------------------------------------------------
 // Context Initialization
@@ -181,6 +182,16 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 #define HAL_THREAD_LOAD_CONTEXT(_tspptr_)                               \
         hal_thread_load_context( (CYG_ADDRESS)_tspptr_ );
 
+//--------------------------------------------------------------------------
+// Idle thread code.
+// This macro is called in the idle thread loop, and gives the HAL the
+// chance to insert code. Typical idle thread behaviour might be to halt the
+// processor. Here we only supply a default fallback if the variant/platform
+// doesn't define anything.
+
+#ifndef HAL_IDLE_THREAD_ACTION
+#define HAL_IDLE_THREAD_ACTION(_count_) CYG_EMPTY_STATEMENT
+#endif
 
 //--------------------------------------------------------------------------
 // Execution reorder barrier.
@@ -208,12 +219,11 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 #define CYGNUM_HAL_STACK_FRAME_SIZE (48)
 
 // Stack needed for a context switch:
-#if defined(CYGHWR_HAL_RISCV_FPU)
-# define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+2)*CYG_HAL_RISCV_REG_SIZE)+(32*CYG_HAL_RISCV_FPU_REG_SIZE))
-#endif
+#ifdef CYGHWR_HAL_RISCV_FPU
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE (((31+2)*CYG_HAL_RISCV_REG_SIZE)+(32*CYG_HAL_RISCV_FPU_REG_SIZE))
 #else
-# define CYGNUM_HAL_STACK_CONTEXT_SIZE ((32+2)*CYG_HAL_RISCV_REG_SIZE)
-#endif
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE ((31+2)*CYG_HAL_RISCV_REG_SIZE)
+#endif //CYGHWR_HAL_RISCV_FPU
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE (4+2*CYGNUM_HAL_STACK_CONTEXT_SIZE) 
@@ -237,29 +247,10 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 #define CYGNUM_HAL_STACK_SIZE_MINIMUM (4096)
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL (4096)
 
-#endif
+#endif //CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 
-
-#define HAL_DISABLE_INTERRUPTS(_old_)           \
-{                                               \
-    asm volatile (                              \
-        "nop"                        \
-        );                                      \
-}
-
-#define HAL_ENABLE_INTERRUPTS()                 \
-{                                               \
-    asm volatile (                              \
-        "nop"                        \
-        );                                      \
-}
-
-#define HAL_RESTORE_INTERRUPTS(_old_)           \
-{                                               \
-    asm volatile (                              \
-        "nop"                        \
-        );                                      \
-}
+#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )          \
+        (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
 #define HAL_QUERY_INTERRUPTS( _state_ )         \
 {                                               \
@@ -267,6 +258,23 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
         "nop"                        \
         );                                      \
 }
+
+// Copy a set of registers from a HAL_SavedRegisters structure into a
+// GDB ordered array.    
+#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             
+
+// Copy a GDB ordered array into a HAL_SavedRegisters structure.
+#define HAL_SET_GDB_REGISTERS( _aregval_ , _regs_ )             
+
+//--------------------------------------------------------------------------
+// Vector translation.
+
+#ifndef HAL_TRANSLATE_VECTOR
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_) \
+    (_index_) = (_vector_)
+#endif //HAL_TRANSLATE_VECTOR
+
+#endif // __ASSEMBLER__
 
 
 //--------------------------------------------------------------------------

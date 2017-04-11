@@ -70,15 +70,8 @@ cdl_package CYGPKG_HAL_RISCV_RISCV32 {
     implements    CYGINT_HAL_RISCV_VARIANT
 
     cdl_option CYGHWR_HAL_RISCV_FPU {
-        display    "Variant FPU support"
-        calculated 0
-    }
-    
-    cdl_option  CYGHWR_HAL_RISCV_CPU_FREQ {
-        display "Variant frequency"
-        flavor data
-        default_value {"20000000"}
-        define -file system.h CYGHWR_HAL_RISCV_CPU_FREQ 
+        display     "Variant FPU support"
+        flavor      bool
     }
     
     define_proc {

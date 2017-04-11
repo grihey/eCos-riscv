@@ -22,5 +22,13 @@
 // ####GPLCOPYRIGHTEND####                                                  
 //===========================================================================
 
-	* 
+ -- Grigoriy Romanov <grigoriy.romanov@syntacore.com>  Tue, 11 Apr 2017 15:01:03 +0300
+
+	* cdl/hal_riscv_bemicrocva9.cdl:	options addded -
+										CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
+										CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL
+	+ plf_io.h: empty file for resolving hal_if include dependencies.
+
  -- Grigoriy Romanov <grigoriy.romanov@syntacore.com>  Fri, 07 Apr 2017 18:39:27 +0300
+
+ 	+ hal_diag.{c,h}: diag output added. 
