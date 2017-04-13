@@ -23,6 +23,6 @@ SECTIONS
     SECTION_sdata (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_stack (ram, 0x7fff200, LMA_EQ_VMA)
+    SECTION_stack (ram, 0x3fff200, LMA_EQ_VMA)
     SECTIONS_END
 }

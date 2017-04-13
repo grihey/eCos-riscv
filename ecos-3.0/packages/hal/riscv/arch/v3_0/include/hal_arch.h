@@ -130,12 +130,12 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     register HAL_SavedRegisters *_regs_;                                                \
     int _i_;                                                                            \
     _regs_ = (HAL_SavedRegisters *)(((_sp_) - sizeof(HAL_SavedRegisters))&0xFFFFFFF0);  \
-    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;                      \
+    for( _i_ = 0; _i_ < 31; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;                      \
     HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ );                                        \
-    (_regs_)->d[1] = (CYG_HAL_RISCV_REG)(_entry_);    /* x1 = RA = entry point  */      \
-    (_regs_)->d[2] = (CYG_HAL_RISCV_REG)(_sp_);       /* x2 = SP = top of stack */      \
-    (_regs_)->d[4] = (CYG_HAL_RISCV_REG)(_thread_);   /* x4 = arg1 = thread ptr */      \
-    (_regs_)->mstatus = 0x00000001;                   /* SR = int en  1         */      \
+    (_regs_)->d[0] = (CYG_HAL_RISCV_REG)(_entry_);    /* x1 = RA = entry point  */      \
+    (_regs_)->d[1] = (CYG_HAL_RISCV_REG)(_sp_);       /* x2 = SP = top of stack */      \
+    (_regs_)->d[3] = (CYG_HAL_RISCV_REG)(_thread_);   /* x4 = arg1 = thread ptr */      \
+    (_regs_)->mstatus = 0x00000006;                   /* SR = mmode, int: dis         */      \
     (_regs_)->mepc = 0x00000000;                   /* SR = int en  1         */      \
     _sparg_ = (CYG_ADDRESS)_regs_;                                                      \
 }

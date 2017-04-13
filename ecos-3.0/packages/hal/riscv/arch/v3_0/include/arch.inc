@@ -82,10 +82,10 @@
 // related to HAL_SavedRegisters;
 #define	riscvreg_regs	0
 #ifdef CYGHWR_HAL_MIPS_FPU
-# define riscvreg_fpureg	    (riscvreg_reg+(riscv_regsize*32))
+# define riscvreg_fpureg	    (riscvreg_regs+(riscv_regsize*31))
 # define riscvreg_mstatus    (riscvreg_fpureg+(riscv_fpuregsize*32))
 #else
-# define riscvreg_mstatus    (riscvreg_regs+(riscv_regsize*32))
+# define riscvreg_mstatus    (riscvreg_regs+(riscv_regsize*31))
 #endif
 #define riscvreg_mepc        (riscvreg_mstatus+riscv_regsize)
 #define	riscvreg_size	    (riscvreg_mepc+riscv_regsize)

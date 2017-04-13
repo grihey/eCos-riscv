@@ -196,7 +196,6 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_bss(_region_, _vma_, _lma_)       \
   .bss _vma_ : _lma_                              \
     {                                             \
-      __bss_start = .;                            \
       *(.dynbss) *(.bss) *(.bss.*) *(COMMON)      \
     } > _region_                                  \
   __bss_end = .;
@@ -209,8 +208,8 @@ GROUP(libtarget.a libgcc.a)
     .stack _vma_ : _lma_                          \
     {                                             \
         . = ALIGN(4);                             \
-        _stack_end = .;                               \
-        _stack = _stack_end + 0x800;             \
+        _stack_end = .;                           \
+        _stack = _stack_end + 0x4000;             \
     } > _region_                    
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \

@@ -84,3 +84,20 @@ externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     return 0;
 }
+
+//==========================================================================
+// When compiling C++ code with static objects the compiler
+// inserts a call to __cxa_atexit() with __dso_handle as one of the
+// arguments. __cxa_atexit() would normally be provided by glibc, and
+// __dso_handle is part of crtstuff.c. eCos applications
+// are linked rather differently, so either a differently-configured
+// compiler is needed or dummy versions of these symbols should be
+// provided. If these symbols are not actually used then providing
+// them is still harmless, linker garbage collection will remove them.
+
+void
+__cxa_atexit(void (*arg1)(void*), void* arg2, void* arg3)
+{
+}
+
+void*   __dso_handle = (void*) &__dso_handle;
