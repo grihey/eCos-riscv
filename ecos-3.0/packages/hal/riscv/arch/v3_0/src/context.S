@@ -87,7 +87,6 @@ hal_thread_load_context:
 #endif
 
     LOAD    x1,  0  * riscv_regsize(sp)
-    LOAD    x2,  1  * riscv_regsize(sp)
     LOAD    x3,  2  * riscv_regsize(sp)
     LOAD    x4,  3  * riscv_regsize(sp)
     LOAD    x5,  4  * riscv_regsize(sp)
@@ -117,8 +116,9 @@ hal_thread_load_context:
     LOAD    x29, 28 * riscv_regsize(sp)
     LOAD    x30, 29 * riscv_regsize(sp)
     LOAD    x31, 30 * riscv_regsize(sp)
-    
-    eret
+    ##LOAD    x2,  1  * riscv_regsize(sp)
+
+    ret
     
     .global hal_setjmp
 hal_setjmp:

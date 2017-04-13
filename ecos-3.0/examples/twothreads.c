@@ -23,19 +23,41 @@ cyg_mutex_t cliblock;
 /* we install our own startup routine which sets up threads */
 void cyg_user_start(void)
 {
-  diag_printf("Entering twothreads' cyg_user_start() function\n");
+  diag_printf("Bro, we entering in a twothreads' cyg_user_start() function\n");
 
   cyg_mutex_init(&cliblock);
 
-  cyg_thread_create(4, simple_program, (cyg_addrword_t) 0,
-		    "Thread A", (void *) stack[0], 4096,
-		    &simple_threadA, &thread_s[0]);
-  cyg_thread_create(4, simple_program, (cyg_addrword_t) 1,
-		    "Thread B", (void *) stack[1], 4096,
-		    &simple_threadB, &thread_s[1]);
+  diag_printf("Bro, mutex initialized' cyg_user_start() function\n");
+
+  cyg_thread_create(4,
+                    simple_program,
+                    (cyg_addrword_t) 0,
+		            "Thread A",
+                    (void *) stack[0],
+                    4096,
+		            &simple_threadA,
+                    &thread_s[0] );
+
+  diag_printf("Bro, threadA created' cyg_user_start() function\n");
+
+
+  cyg_thread_create(4,
+                    simple_program,
+                    (cyg_addrword_t) 1,
+		            "Thread B",
+                    (void *) stack[1],
+                    4096,
+		            &simple_threadB,
+                    &thread_s[1]);
+  diag_printf("Bro, threadB created' cyg_user_start() function\n");
 
   cyg_thread_resume(simple_threadA);
+
+  diag_printf("Bro, threadA resumed' cyg_user_start() function\n");
+
   cyg_thread_resume(simple_threadB);
+
+  diag_printf("Bro, threadB resumed' cyg_user_start() function\n");
 }
 
 /* this is a simple program which runs in a thread */
