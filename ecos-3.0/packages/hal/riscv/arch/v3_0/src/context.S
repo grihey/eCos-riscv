@@ -19,52 +19,50 @@
     .global hal_thread_switch_context
 hal_thread_switch_context:
 
-    addi    sp, sp, -riscvreg_size #space for regs
+    LOAD    a1, (a1)
 
-    STORE   x1,  0  * riscv_regsize(sp)
-	STORE	x2,  1  * riscv_regsize(sp)
-	STORE	x3,  2  * riscv_regsize(sp)
-	STORE	x4,  3  * riscv_regsize(sp)
-	STORE	x5,  4  * riscv_regsize(sp)
-	STORE	x6,  5  * riscv_regsize(sp)
-	STORE	x7,  6  * riscv_regsize(sp)
-	STORE	x8,  7  * riscv_regsize(sp)
-	STORE	x9,  8  * riscv_regsize(sp)
-	STORE	x10, 9  * riscv_regsize(sp)
-	STORE	x11, 10 * riscv_regsize(sp)
-	STORE	x12, 11 * riscv_regsize(sp)
-	STORE	x13, 12 * riscv_regsize(sp)
-	STORE	x14, 13 * riscv_regsize(sp)
-	STORE	x15, 14 * riscv_regsize(sp)
-	STORE	x16, 15 * riscv_regsize(sp)
-	STORE	x17, 16 * riscv_regsize(sp)
-	STORE	x18, 17 * riscv_regsize(sp)
-	STORE	x19, 18 * riscv_regsize(sp)
-	STORE	x20, 19 * riscv_regsize(sp)
-	STORE	x21, 20 * riscv_regsize(sp)
-	STORE	x22, 21 * riscv_regsize(sp)
-	STORE	x23, 22 * riscv_regsize(sp)
-	STORE	x24, 23 * riscv_regsize(sp)
-	STORE	x25, 24 * riscv_regsize(sp)
-	STORE	x26, 25 * riscv_regsize(sp)
-	STORE	x27, 26 * riscv_regsize(sp)
-	STORE	x28, 27 * riscv_regsize(sp)
-	STORE	x29, 28 * riscv_regsize(sp)
-	STORE	x30, 29 * riscv_regsize(sp)
-	STORE	x31, 30 * riscv_regsize(sp)
+    STORE   x1,  0  * riscv_regsize(a1)
+	STORE	x2,  1  * riscv_regsize(a1)
+	STORE	x3,  2  * riscv_regsize(a1)
+	STORE	x4,  3  * riscv_regsize(a1)
+	STORE	x5,  4  * riscv_regsize(a1)
+	STORE	x6,  5  * riscv_regsize(a1)
+	STORE	x7,  6  * riscv_regsize(a1)
+	STORE	x8,  7  * riscv_regsize(a1)
+	STORE	x9,  8  * riscv_regsize(a1)
+	STORE	x10, 9  * riscv_regsize(a1)
+	STORE	x11, 10 * riscv_regsize(a1)
+	STORE	x12, 11 * riscv_regsize(a1)
+	STORE	x13, 12 * riscv_regsize(a1)
+	STORE	x14, 13 * riscv_regsize(a1)
+	STORE	x15, 14 * riscv_regsize(a1)
+	STORE	x16, 15 * riscv_regsize(a1)
+	STORE	x17, 16 * riscv_regsize(a1)
+	STORE	x18, 17 * riscv_regsize(a1)
+	STORE	x19, 18 * riscv_regsize(a1)
+	STORE	x20, 19 * riscv_regsize(a1)
+	STORE	x21, 20 * riscv_regsize(a1)
+	STORE	x22, 21 * riscv_regsize(a1)
+	STORE	x23, 22 * riscv_regsize(a1)
+	STORE	x24, 23 * riscv_regsize(a1)
+	STORE	x25, 24 * riscv_regsize(a1)
+	STORE	x26, 25 * riscv_regsize(a1)
+	STORE	x27, 26 * riscv_regsize(a1)
+	STORE	x28, 27 * riscv_regsize(a1)
+	STORE	x29, 28 * riscv_regsize(a1)
+	STORE	x30, 29 * riscv_regsize(a1)
+	STORE	x31, 30 * riscv_regsize(a1)
 
 # TODO: break below func on callee and caller macros
 #ifdef CYGHWR_HAL_RISCV_FPU
-    hal_fpu_save_regs sp
+    hal_fpu_save_regs a1
 #endif
 
     csrr    t0, mepc
-    STORE   t0, riscvreg_mepc(sp)
+    STORE   t0, riscvreg_mepc(a1)
 
     csrr    t0, mstatus
-    STORE   t0, riscvreg_mstatus(sp)
-
-    STORE   sp, (a1) #save sp in location passed by second arg
+    STORE   t0, riscvreg_mstatus(a1)
 
     # Now load the destination thread by dropping through
     # to hal_thread_load_context
@@ -73,50 +71,50 @@ hal_thread_switch_context:
     .global hal_thread_load_context
 hal_thread_load_context:
 
-    LOAD    sp, (a0)
+    LOAD    a0, (a0)
 
-    LOAD    t0, riscvreg_mepc(sp)
+    LOAD    t0, riscvreg_mepc(a0)
     csrw    mepc, t0
 
-    LOAD    t0, riscvreg_mstatus(sp)
+    LOAD    t0, riscvreg_mstatus(a0)
     csrw    mstatus, t0
 
 # TODO: break below func on callee and caller macros
 #ifdef CYGHWR_HAL_RISCV_FPU
-    hal_fpu_load_regs sp
+    hal_fpu_load_regs a0
 #endif
 
-    LOAD    x1,  0  * riscv_regsize(sp)
-    LOAD    x3,  2  * riscv_regsize(sp)
-    LOAD    x4,  3  * riscv_regsize(sp)
-    LOAD    x5,  4  * riscv_regsize(sp)
-    LOAD    x6,  5  * riscv_regsize(sp)
-    LOAD    x7,  6  * riscv_regsize(sp)
-    LOAD    x8,  7  * riscv_regsize(sp)
-    LOAD    x9,  8  * riscv_regsize(sp)
-    LOAD    x10, 9  * riscv_regsize(sp)
-    LOAD    x11, 10 * riscv_regsize(sp)
-    LOAD    x12, 11 * riscv_regsize(sp)
-    LOAD    x13, 12 * riscv_regsize(sp)
-    LOAD    x14, 13 * riscv_regsize(sp)
-    LOAD    x15, 14 * riscv_regsize(sp)
-    LOAD    x16, 15 * riscv_regsize(sp)
-    LOAD    x17, 16 * riscv_regsize(sp)
-    LOAD    x18, 17 * riscv_regsize(sp)
-    LOAD    x19, 18 * riscv_regsize(sp)
-    LOAD    x20, 19 * riscv_regsize(sp)
-    LOAD    x21, 20 * riscv_regsize(sp)
-    LOAD    x22, 21 * riscv_regsize(sp)
-    LOAD    x23, 22 * riscv_regsize(sp)
-    LOAD    x24, 23 * riscv_regsize(sp)
-    LOAD    x25, 24 * riscv_regsize(sp)
-    LOAD    x26, 25 * riscv_regsize(sp)
-    LOAD    x27, 26 * riscv_regsize(sp)
-    LOAD    x28, 27 * riscv_regsize(sp)
-    LOAD    x29, 28 * riscv_regsize(sp)
-    LOAD    x30, 29 * riscv_regsize(sp)
-    LOAD    x31, 30 * riscv_regsize(sp)
-    ##LOAD    x2,  1  * riscv_regsize(sp)
+    LOAD    x1,  0  * riscv_regsize(a0)
+    LOAD    x2,  1  * riscv_regsize(a0)
+    LOAD    x3,  2  * riscv_regsize(a0)
+    LOAD    x4,  3  * riscv_regsize(a0)
+    LOAD    x5,  4  * riscv_regsize(a0)
+    LOAD    x6,  5  * riscv_regsize(a0)
+    LOAD    x7,  6  * riscv_regsize(a0)
+    LOAD    x8,  7  * riscv_regsize(a0)
+    LOAD    x9,  8  * riscv_regsize(a0)
+    LOAD    x11, 10 * riscv_regsize(a0)
+    LOAD    x12, 11 * riscv_regsize(a0)
+    LOAD    x13, 12 * riscv_regsize(a0)
+    LOAD    x14, 13 * riscv_regsize(a0)
+    LOAD    x15, 14 * riscv_regsize(a0)
+    LOAD    x16, 15 * riscv_regsize(a0)
+    LOAD    x17, 16 * riscv_regsize(a0)
+    LOAD    x18, 17 * riscv_regsize(a0)
+    LOAD    x19, 18 * riscv_regsize(a0)
+    LOAD    x20, 19 * riscv_regsize(a0)
+    LOAD    x21, 20 * riscv_regsize(a0)
+    LOAD    x22, 21 * riscv_regsize(a0)
+    LOAD    x23, 22 * riscv_regsize(a0)
+    LOAD    x24, 23 * riscv_regsize(a0)
+    LOAD    x25, 24 * riscv_regsize(a0)
+    LOAD    x26, 25 * riscv_regsize(a0)
+    LOAD    x27, 26 * riscv_regsize(a0)
+    LOAD    x28, 27 * riscv_regsize(a0)
+    LOAD    x29, 28 * riscv_regsize(a0)
+    LOAD    x30, 29 * riscv_regsize(a0)
+    LOAD    x31, 30 * riscv_regsize(a0)
+    LOAD    x10, 9  * riscv_regsize(a0)
 
     ret
     

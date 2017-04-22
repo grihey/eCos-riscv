@@ -56,8 +56,6 @@
 ##
 ##=============================================================================
 
-//#include <cyg/hal/riscv.inc>
-//#include <cyg/hal/variant.inc>
 
 #ifdef CYGHWR_HAL_RISCV_64BIT
 # define riscv_regsize 	8

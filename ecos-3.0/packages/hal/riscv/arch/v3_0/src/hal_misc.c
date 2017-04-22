@@ -54,6 +54,7 @@
 #include <cyg/infra/cyg_type.h>         // Base types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
+#include <cyg/infra/diag.h>
 
 #include <cyg/hal/hal_arch.h>           // architectural definitions
 
@@ -81,6 +82,108 @@ cyg_uint32 hal_lsbit_index(cyg_uint32 mask)
 }
 
 externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    return 0;
+}
+
+typedef void (*pfunc) (void);
+extern pfunc __init_array_start[];
+extern pfunc __init_array_end[];
+
+void
+cyg_hal_invoke_constructors(void)
+{
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    static pfunc *p = &__init_array_start[0];
+
+    cyg_hal_stop_constructors = 0;
+    for (; p < __init_array_end; p++) {
+        (*p) ();
+        if (cyg_hal_stop_constructors) {
+            p++;
+            break;
+        }
+    }
+#else
+    pfunc *p;
+
+    for (p = &__init_array_start[0]; p < __init_array_end; p++)
+        (*p) ();
+#endif
+
+} // cyg_hal_invoke_constructors()
+
+
+void hal_interrupt_mask(int vector)
+{
+    cyg_uint32 tmp = (cyg_uint32) (1<<vector);
+    asm volatile(
+            "csrc  mie, %0\n"
+            :
+            :"r"(tmp)
+            );
+}
+
+void hal_interrupt_unmask(int vector)
+{
+    cyg_uint32 tmp = (cyg_uint32) (1<<vector);
+    asm volatile(
+            "csrs   mie, %0\n"
+            :
+            :"r"(tmp)
+            );
+}
+
+void hal_interrupt_acknowledge(int vector)
+{
+}
+
+void hal_interrupt_configure(int vector, int level, int up)
+{
+}
+
+void hal_interrupt_set_level(int vector, int level)
+{
+}
+
+// TRAP HADLER and consequenses
+typedef void* Cyg_Interrupt;
+
+void interrupt_end(
+    cyg_uint32          isr_ret,
+    Cyg_Interrupt       *intr,
+    HAL_SavedRegisters  *ctx
+    );
+
+//void cyg_interrupt_call_pending_DSRs(void);
+
+cyg_uint32 trap_handler_diag(cyg_uint32 mcause, HAL_SavedRegisters *regs)
+{
+    diag_printf("In trap_handler, mcause %X\n", mcause);
+    /*cyg_uint32 isr_answer;
+    cyg_uint32 (*isr)(cyg_uint32,void*);
+//check cause and jump to accompanying vector
+    if(mcause == CYGNUM_HAL_MTIMER_CAUSE) {
+
+        //TODO: must be removed after debugging
+        asm volatile ("csrw mtimecmp, 0x0\n"
+                       :
+                       :
+                        );
+
+        isr = hal_interrupt_handlers[CYGNUM_HAL_MTIMER_INTERRUPT];
+        isr_answer = isr(CYGNUM_HAL_MTIMER_INTERRUPT,
+                hal_interrupt_data[CYGNUM_HAL_MTIMER_INTERRUPT]);
+
+        interrupt_end(isr_answer, hal_interrupt_objects[CYGNUM_HAL_MTIMER_INTERRUPT], regs);
+
+    } else {
+        while(1);
+    }*/
+    return mcause;
+}
+
+cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     return 0;
 }

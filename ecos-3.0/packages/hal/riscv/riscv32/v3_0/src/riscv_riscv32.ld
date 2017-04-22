@@ -144,12 +144,60 @@ GROUP(libtarget.a libgcc.a)
   .rela.plt      :   { *(.rela.plt)   } > _region_                          \
   .rel.dyn       :   { *(.rel.dyn)    } > _region_
 
+#define SECTION_init_array(_region_, _vma_, _lma_)  \
+    .init_array _vma_ : _lma_                       \
+    {                                               \
+        __init_array_start = .;                     \
+        PROVIDE(__init_array_start = .);            \
+        KEEP (*(SORT(.init_array.*)))               \
+        KEEP (*(.init_array*))                      \
+        __init_array_end = .;                       \
+        PROVIDE(__init_array_end = .);              \
+    } > _region_        
+
+#define SECTION_ctors(_region_, _vma_, _lma_)     \
+  .ctors _vma_ : _lma_                            \
+    {                                             \
+      FORCE_OUTPUT;                               \
+      KEEP (*crtbegin.o(.ctors))                  \
+      __CTOR_LIST__ = .;                          \
+      PROVIDE (__CTOR_LIST__ = .);                \
+      KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))   \
+      KEEP (*(SORT(.ctors.*)))                    \
+      KEEP (*(.ctors))                            \
+      SORT(CONSTRUCTORS);                         \
+      __CTOR_END__ = .;                           \
+      PROVIDE (__CTOR_END__ = .);                 \
+    } > _region_
+
+#define SECTION_dtors(_region_, _vma_, _lma_)     \
+  .dtors _vma_ : _lma_                            \
+    {                                             \
+      FORCE_OUTPUT;                               \
+      KEEP (*crtbegin.o(.dtors))                  \
+      __DTOR_LIST__ = .;                          \
+      PROVIDE (__DTOR_LIST__ = .);                \
+      KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))   \
+      KEEP (*(SORT(.dtors.*)))                    \
+      KEEP (*(.dtors))                            \
+      __DTOR_END__ = .;                           \
+      PROVIDE (__DTOR_END__ = .);                 \
+    } > _region_
+
+#define SECTION_devtab(_region_, _vma_, _lma_)    \
+  .devtab _vma_ : _lma_                           \
+    {                                             \
+      FORCE_OUTPUT;                               \
+      KEEP(*( SORT (.ecos.table.*))) ;            \
+    } > _region_
+
 #define SECTION_init(_region_, _vma_, _lma_)   \
   .init _vma_ : _lma_                          \
     {                                          \
       FORCE_OUTPUT; KEEP (*(.init))            \
     } > _region_ =0                            \
-    _gp = ALIGN(16) + 0x7ff0;                     
+    _gp = ALIGN(16) + 0x7ff0;                      
+
 
 #define SECTION_text(_region_, _vma_, _lma_)   \
   .text _vma_ : _lma_                          \
@@ -174,7 +222,6 @@ GROUP(libtarget.a libgcc.a)
       __ram_data_start = ABSOLUTE (.); _fdata = . ;   \
       *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
     . = ALIGN (8);                                    \
-    SORT(CONSTRUCTORS)                                \
     } > _region_                                      \
     __rom_data_start = LOADADDR(.data);
 
@@ -200,22 +247,15 @@ GROUP(libtarget.a libgcc.a)
     } > _region_                                  \
   __bss_end = .;
 
-/* The /DISCARD/ section ensures that the output will not contain a
- * .mdebug section as it confuses GDB. This is a workaround for CR 100804.
- */
-
-#define SECTION_stack(_region_, _vma_, _lma_)     \
-    .stack _vma_ : _lma_                          \
-    {                                             \
-        . = ALIGN(4);                             \
-        _stack_end = .;                           \
-        _stack = _stack_end + 0x4000;             \
-    } > _region_                    
+#define SECTION_int_stack(_region_, _vma_, _lma_)   \
+  .int_stack _vma_ : _lma_                                \
+    {                                               \
+        *(.int_stack)                               \
+    } > _region_                                    \
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \
 
-#ifndef CYGPKG_HAL_MIPS_SIM
-hal_virtual_vector_table = 0x0;
-#endif
+hal_vsr_table = 0x100;
+hal_virtual_vector_table = 0x200;
 
 #include CYGHWR_MEMORY_LAYOUT_LDI

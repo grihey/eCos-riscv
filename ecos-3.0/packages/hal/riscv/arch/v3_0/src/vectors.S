@@ -1,5 +1,7 @@
 
 #include <cyg/hal/arch.inc>
+#include <pkgconf/hal.h>
+#include <cyg/hal/hal_intr.h>
 
 .section ".trap_vectors","ax"
 	.align 6
@@ -73,65 +75,30 @@ init_bss:
     jal	fill_block
 
 write_stack_pattern:
-    /* init bss section */
-    la	a0, _stack_end  /* note the stack grows from top to bottom */
-    la	a1, _stack
-    li	a2, 0xABABABAB
+    la	a0, _interrupt_stack_end  /* note the stack grows from top to bottom */
+    la	a1, _interrupt_stack
+    li	a2, 0x0
     jal	fill_block
 
 init_stack:
     /* set stack pointer */
-    la	sp, _stack
+    la	sp, _interrupt_stack
 
-/*    .global plf_init, main
-    ## platform init
-10: auipc t0, %pcrel_hi(plf_init)
-    jalr  t0, %pcrel_lo(10b)
-    ## start main
-11: auipc t0, %pcrel_hi(main)
-    ## init argv=0, argc=0
-    li a0, 0
-    li a1, 0
-    jalr  t0, %pcrel_lo(11b) */
+	# Call constructors
+	.extern cyg_hal_invoke_constructors
+	jal     cyg_hal_invoke_constructors
+
     jal   cyg_start
 
 .previous
-
-    .global trap_handler
-    .weak trap_handler
-trap_handler:
-    ret
 
 halt_loop:
     wfi
     j     halt_loop
 
-/* When trap is an interrupt, this function is called */
-interrupt:
-	srli	t0,t0,1
-	beq		t0,x0,softwareInterrupt
-	LOAD	t0, 0x0(sp)
-	addi	sp, sp, riscv_regsize
-
-	/* Interupt is timer interrupt */
-	/* j		TIMER_CMP_INT */
-	eret
-softwareInterrupt:
-	/* Interupt is software interrupt */
-	eret
-
-
 /* For when a trap is fired */
 trap_entry:
-	/* Check for interrupt */
-	addi	sp, sp, -riscv_regsize
-	STORE	t0, 0x0(sp)
-	csrr	t0, mcause
-	blt	t0,x0,interrupt
-	LOAD	t0, 0x0(sp)
-	addi	sp, sp, riscv_regsize
 
-	/* System call and other traps */
 	addi sp, sp, -riscvreg_size
 	STORE x1, 0*riscv_regsize(sp)
 	STORE x2, 1*riscv_regsize(sp)
@@ -165,16 +132,88 @@ trap_entry:
 	STORE x30, 29*riscv_regsize(sp)
 	STORE x31, 30*riscv_regsize(sp)
 
-	csrr a0, mcause
-	csrr a1, mepc
+#ifdef CYGHWR_HAL_RISCV_FPU
+    hal_fpu_save_regs sp
+#endif //CYGHWR_HAL_RISCV_FPU
 
-	mv a2, sp
-	jal trap_handler
+	csrr    t0, mstatus
+    STORE   t0, riscvreg_mstatus(sp)
+	csrr    t0, mepc
+    STORE   t0, riscvreg_mepc(sp)
 
-	csrw mepc, a0
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT			
+	.extern	cyg_scheduler_sched_lock
+	la	    t0,cyg_scheduler_sched_lock
+	lw	    t1,0(t0)
+	addi	t1, t1, 1
+	sw	    t1,0(t0)
+#endif
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
+    mv      t0, sp
+    la      sp, _interrupt_stack
+    addi    sp, sp, -riscv_regsize
+    STORE   t0, 0(sp)
+#endif //CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
+
+    .extern trap_handler_diag
+    .extern interrupt_end
+
+trap_handler:
+
+    csrr    t1, mcause 
+    mv      a0, t1
+
+    jal     trap_handler_diag
+
+    csrr    t1, mcause 
+
+    // if interrupt handle it, if not  restore sp and exit
+    bltz    t1, 1f
+    LOAD    sp, (sp)    
+    j       restore_context
+
+1:  
+    andi    t1, t1, 0xf
+    mv      a0, t1
+
+    //TODO: 2 should be a parameter related to regsize
+    slli    t1, t1, 2
+
+    la      a1, hal_interrupt_data
+    add     a1, a1, t1
+    LOAD    a1, (a1)
+    la      t2, hal_interrupt_handlers
+    add     t2, t2, t1
+    LOAD    t2, (t2)
+
+    //TODO: delete after debuging
+    csrw    mtimecmp, 0
+    jalr    t2
+
+    la      a1, hal_interrupt_objects
+    add     a1, a1, t1
+    LOAD    a1, (a1)
+
+    LOAD    a2, (sp) 
+
+    //return thread stack pointer cause context may switching
+    mv      sp, a2
+    // a0 already have isr answer
+    jal     interrupt_end
+
+restore_context:
+
+    LOAD    t0, riscvreg_mstatus(sp)
+	csrw    mstatus, t0
+    LOAD    t0, riscvreg_mepc(sp)
+	csrw    mepc, t0
+
+#ifdef CYGHWR_HAL_RISCV_FPU
+    hal_fpu_load_regs sp
+#endif //CYGHWR_HAL_RISCV_FPU
 
 	LOAD x1, 0*riscv_regsize(sp)
-	LOAD x2, 1*riscv_regsize(sp)
 	LOAD x3, 2*riscv_regsize(sp)
 	LOAD x4, 3*riscv_regsize(sp)
 	LOAD x5, 4*riscv_regsize(sp)
@@ -204,8 +243,9 @@ trap_entry:
 	LOAD x29, 28*riscv_regsize(sp)
 	LOAD x30, 29*riscv_regsize(sp)
 	LOAD x31, 30*riscv_regsize(sp)
+	LOAD x2,  1*riscv_regsize(sp)
 
-	addi sp, sp, riscvreg_size
+    addi    sp, sp, riscvreg_size
 	eret
 
 /* Fills memory blocks */
@@ -217,6 +257,7 @@ fill_block:
 fb_end:
     ret
 
+
     /*empty*/
     .globl __default_interrupt_vsr
 __default_interrupt_vsr:
@@ -226,10 +267,27 @@ __default_interrupt_vsr:
 __default_exception_vsr:
     ret
 
-#ifndef CYG_HAL_MIPS_VSR_TABLE_DEFINED
+##-----------------------------------------------------------------------------
+## Interrupt Stack.
+## Used during intialization and for executing ISRs.
 	
-##	.section ".vsr_table","a"
-	
+    .section ".int_stack"
+
+	.balign 16
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
+_interrupt_stack_end:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+	.byte 0
+	.endr
+	.balign 16
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
+_interrupt_stack:
+
+	.long	0,0,0,0,0,0,0,0	
+    .previous
+
 	.data
 	.globl	hal_vsr_table
 
@@ -239,11 +297,8 @@ hal_vsr_table:
 	.long	__default_exception_vsr	
 	.endr
     .previous
-#endif	
 
-    .section ".fixed_vectors"
 // Space for the virtual vectors        
-    .balign 4
 // Vectors used to communicate between eCos and ROM environments
     .globl  hal_virtual_vector_table
 hal_virtual_vector_table:
@@ -252,28 +307,25 @@ hal_virtual_vector_table:
     .endr
     .previous
 
+//Interrupt handlers and related arrays
 	.extern hal_default_isr
 	
 	.data
 
 	.globl	hal_interrupt_handlers
 hal_interrupt_handlers:
+	.rept   CYGNUM_HAL_ISR_COUNT
 	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-
+	.endr
 
 	.globl	hal_interrupt_data
 hal_interrupt_data:
-	.rept	6
+	.rept   CYGNUM_HAL_ISR_COUNT
 	.long	0
 	.endr
 
 	.globl	hal_interrupt_objects
 hal_interrupt_objects:
-	.rept	6
+	.rept	CYGNUM_HAL_ISR_COUNT
 	.long	0
 	.endr

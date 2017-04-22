@@ -132,12 +132,12 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     _regs_ = (HAL_SavedRegisters *)(((_sp_) - sizeof(HAL_SavedRegisters))&0xFFFFFFF0);  \
     for( _i_ = 0; _i_ < 31; _i_++ ) (_regs_)->d[_i_] = 0x00000000;                      \
     HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ );                                        \
-    (_regs_)->d[0] = (CYG_HAL_RISCV_REG)(_entry_);    /* x1 = RA = entry point  */      \
-    (_regs_)->d[1] = (CYG_HAL_RISCV_REG)(_sp_);       /* x2 = SP = top of stack */      \
+    (_regs_)->d[0] = (CYG_HAL_RISCV_REG)(_entry_);    /* x1 = RA return address */      \
+    (_regs_)->d[1] = (CYG_HAL_RISCV_REG)(_regs_);       /* x2 = SP = top of stack */      \
     (_regs_)->d[3] = (CYG_HAL_RISCV_REG)(_thread_);   /* x4 = arg1 = thread ptr */      \
     (_regs_)->d[9] = (CYG_HAL_RISCV_REG)(_thread_);   /* x10 = arg0 for thread_entry*/      \
-    (_regs_)->mstatus = 0x00000006;                   /* SR = mmode in PRV1, int: dis         */      \
-    (_regs_)->mepc = 0x00000000;                   /* SR = int en  1         */      \
+    (_regs_)->mstatus = 0x0000007;                   /* SR = mmode in PRV1, int PRV1: en */      \
+    (_regs_)->mepc = 0x00000000;    /* SR = int en  1         */      \
     _sparg_ = (CYG_ADDRESS)_regs_;                                                      \
 }
 
@@ -216,7 +216,6 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // This is not a config option because it should not be adjusted except
 // under "enough rope" sort of disclaimers.
 
-// Typical case stack frame size: return link + 4 pushed registers + some locals.
 #define CYGNUM_HAL_STACK_FRAME_SIZE (48)
 
 // Stack needed for a context switch:
@@ -270,10 +269,6 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 //--------------------------------------------------------------------------
 // Vector translation.
 
-#ifndef HAL_TRANSLATE_VECTOR
-#define HAL_TRANSLATE_VECTOR(_vector_,_index_) \
-    (_index_) = (_vector_)
-#endif //HAL_TRANSLATE_VECTOR
 
 #endif // __ASSEMBLER__
 

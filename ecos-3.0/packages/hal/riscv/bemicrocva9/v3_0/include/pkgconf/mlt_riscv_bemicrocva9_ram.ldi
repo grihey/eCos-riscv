@@ -12,17 +12,20 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_fixed_vectors(ram, 0x0, LMA_EQ_VMA)
-    SECTION_rom_vectors(ram, 0x200, LMA_EQ_VMA)
+    SECTION_rom_vectors(ram, 0x300, LMA_EQ_VMA)
     SECTION_ROMISC (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_RELOCS (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_init (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_init_array (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ctors (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_dtors (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_devtab (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_sdata (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_stack (ram, 0x3fff200, LMA_EQ_VMA)
+    SECTION_int_stack (ram, 0x100000, LMA_EQ_VMA)
     SECTIONS_END
 }

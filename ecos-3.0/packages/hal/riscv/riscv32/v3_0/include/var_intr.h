@@ -62,11 +62,20 @@
 
 #include <pkgconf/hal.h>
 
+#ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
+#endif //__ASSEMBLER__ 
 
 #include <cyg/hal/plf_intr.h>
  
+#define CYGNUM_HAL_ISR_MIN      0
+#define CYGNUM_HAL_ISR_MAX      7 
 #define CYGNUM_HAL_ISR_COUNT    8
+
+#ifdef CYGHWR_HAL_RISCV_RISCV32_CORE_SCR5
+# define CYGNUM_HAL_MTIMER_INTERRUPT         7
+# define CYGNUM_HAL_MTIMER_CAUSE             0x80000007 //priv spec 1.9
+#endif
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_IMP_INTR_H
 // End of imp_intr.h

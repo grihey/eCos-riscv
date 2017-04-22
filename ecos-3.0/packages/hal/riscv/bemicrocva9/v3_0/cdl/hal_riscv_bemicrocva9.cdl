@@ -62,8 +62,6 @@ cdl_package CYGPKG_HAL_RISCV_BEMICROCVA9 {
 
     compile       platform.S plf_misc.c hal_diag.c
 
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-
     cdl_option CYGBLD_HAL_TARGET_H {
         display       "Variant header"
         flavor        data

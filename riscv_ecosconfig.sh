@@ -7,13 +7,14 @@ ECOSTOOL=$TOOLDIR/bin/ecosconfig
 CONFIG_ECC=$TOPDIR/../Configs/kernel_riscv.ecc
 REPO_DIR=$TOPDIR/packages 
 INST_DIR=$TOPDIR/../Configs/kernel_riscv_install
+EXAMPLES_DIR=$TOPDIR/examples
 
 rm -rf $BLDDIR
 mkdir -p $BLDDIR && cd $BLDDIR
 $ECOSTOOL --config=$CONFIG_ECC --srcdir=$REPO_DIR --prefix=$INST_DIR tree
 
-#riscv32-unknown-elf-gcc -nostartfiles -Ttarget.ld -o image.elf vectors.o libtarget.a helloc.o
-
-#riscv32-unknown-elf-objdump -x -s -w -D vectors.o > vectors.dump
-#riscv32-unknown-elf-objdump -x -s -w -D libtarget.a > libtarget.dump
-#riscv32-unknown-elf-objdump -x -s -w -D image.elf > image.dump
+make -C $BLDDIR
+make -C $EXAMPLES_DIR -f twothreads.mak clean    
+make -C $EXAMPLES_DIR -f twothreads.mak 
+make -C $INST_DIR/lib clean
+make -C $INST_DIR/lib

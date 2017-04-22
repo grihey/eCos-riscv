@@ -61,7 +61,9 @@
 
 #include <pkgconf/hal.h>
 
+#ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
+#endif //__ASSEMBLER__ 
 //#include <cyg/hal/plf_io.h>
 
 
